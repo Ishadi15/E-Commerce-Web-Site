@@ -79,12 +79,12 @@ function AppContent() {
         {/* Navigation Categories */}
         <nav className="hidden lg:flex justify-center border-t border-gray-100">
           <ul className="flex gap-8 text-sm font-bold text-gray-800 uppercase tracking-wide py-3">
+            <li><a href="#" onClick={(e) => handleCategoryClick(e, '')} className={`hover:text-brand-500 transition-colors ${filters.category === '' ? 'text-brand-500' : ''}`}>All</a></li>
             <li><a href="#" onClick={(e) => handleCategoryClick(e, 'Women')} className={`hover:text-brand-500 transition-colors ${filters.category === 'Women' ? 'text-brand-500' : ''}`}>Ladies</a></li>
             <li><a href="#" onClick={(e) => handleCategoryClick(e, 'Men')} className={`hover:text-brand-500 transition-colors ${filters.category === 'Men' ? 'text-brand-500' : ''}`}>Gents</a></li>
             <li><a href="#" onClick={(e) => handleCategoryClick(e, 'Kids')} className={`hover:text-brand-500 transition-colors ${filters.category === 'Kids' ? 'text-brand-500' : ''}`}>Kids</a></li>
             <li><a href="#" onClick={(e) => handleCategoryClick(e, 'Footwear')} className={`hover:text-brand-500 transition-colors ${filters.category === 'Footwear' ? 'text-brand-500' : ''}`}>Footwear</a></li>
             <li><a href="#" onClick={(e) => handleCategoryClick(e, 'Accessories')} className={`hover:text-brand-500 transition-colors ${filters.category === 'Accessories' ? 'text-brand-500' : ''}`}>Accessories</a></li>
-            <li><a href="#" onClick={(e) => handleCategoryClick(e, '')} className={`hover:text-brand-500 transition-colors ${filters.category === '' ? 'text-brand-500' : ''}`}>All</a></li>
             <li><a href="#" className="text-brand-500 hover:text-red-700 transition-colors">Offers</a></li>
           </ul>
         </nav>
