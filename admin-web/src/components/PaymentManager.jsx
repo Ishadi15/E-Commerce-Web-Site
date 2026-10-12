@@ -797,7 +797,14 @@ export default function PaymentManager({
             >
               <option value="">-- Choose Appointment --</option>
               {appointments
-                .filter((a) => a.status === 'completed')
+                .filter((a) => {
+                  if (a.status !== 'completed') return false;
+                  const aptRef = a.confirmationCode || a.id || a._id;
+                  const alreadyPaid = payments.some(
+                    (p) => p.appointmentId && p.appointmentId === aptRef
+                  );
+                  return !alreadyPaid;
+                })
                 .map((a) => (
                   <option key={a.id || a._id} value={a.confirmationCode || a.id || a._id}>
                     [{a.confirmationCode || 'APT'}] {a.customerName} ({a.status})
@@ -1259,19 +1266,23 @@ export default function PaymentManager({
                         </p>
                         <button
                           type="button"
+                          disabled={appliedDiscount > 0}
                           style={{
-                            background: 'linear-gradient(135deg, #f39c12 0%, #e67e22 100%)',
+                            background: appliedDiscount > 0
+                              ? '#aaa'
+                              : 'linear-gradient(135deg, #f39c12 0%, #e67e22 100%)',
                             color: '#fff',
                             border: 'none',
                             padding: '6px 14px',
                             borderRadius: '4px',
                             fontWeight: 'bold',
-                            cursor: 'pointer',
-                            marginTop: '6px'
+                            cursor: appliedDiscount > 0 ? 'not-allowed' : 'pointer',
+                            marginTop: '6px',
+                            opacity: appliedDiscount > 0 ? 0.7 : 1
                           }}
                           onClick={handleApplyLoyaltyDiscount}
                         >
-                          Apply Loyalty Discount (Redeem 10 Points)
+                          {appliedDiscount > 0 ? '✅ Discount Applied' : 'Apply Loyalty Discount (Redeem 10 Points)'}
                         </button>
                       </>
                     )}

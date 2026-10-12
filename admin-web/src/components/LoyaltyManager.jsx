@@ -1,17 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { earnLoyaltyPoints, redeemLoyaltyPoints } from '../services/api';
+import React from 'react';
 
-const getTier = (points) => {
-  if (points >= 200) return { name: 'Platinum Member', color: '#8e44ad', bg: '#f5eef8' };
-  if (points >= 100) return { name: 'Gold Member', color: '#f39c12', bg: '#fef5e7' };
-  if (points >= 50) return { name: 'Silver Member', color: '#7f8c8d', bg: '#f4f6f7' };
-  return { name: 'Bronze Member', color: '#d35400', bg: '#fdf2e9' };
-};
-
-const getInitials = (name) => {
-  if (!name) return 'U';
-  return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-};
 
 export default function LoyaltyManager({ customers = [], loading, onRefresh }) {
   return (
