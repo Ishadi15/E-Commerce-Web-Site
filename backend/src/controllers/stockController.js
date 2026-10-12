@@ -14,7 +14,7 @@ exports.getStocks = async (req, res) => {
 // POST /api/stocks — create a new stock item
 exports.createStock = async (req, res) => {
   try {
-    const { partName, partNumber, quantity, minQuantity, unitPrice, supplier } = req.body;
+    const { partName, partNumber, quantity, minQuantity, unitPrice, supplier, unit, forecastItemId } = req.body;
 
     if (!partName || !partNumber) {
       return res.status(400).json({ error: 'partName and partNumber are required' });
@@ -27,6 +27,7 @@ exports.createStock = async (req, res) => {
       minQuantity: Number(minQuantity) || 10,
       unitPrice: Number(unitPrice) || 0,
       supplier: supplier || '',
+      unit: unit || '',forecastItemId: forecastItemId || '',
     });
 
     res.status(201).json({ stock });
@@ -43,9 +44,11 @@ exports.createStock = async (req, res) => {
 exports.updateStock = async (req, res) => {
   try {
     const { id } = req.params;
-    const { partName, partNumber, quantity, minQuantity, unitPrice, supplier } = req.body;
+    const { partName, partNumber, quantity, minQuantity, unitPrice, supplier, unit, forecastItemId } = req.body;
 
     const updateData = {};
+    if (unit !== undefined) updateData.unit = unit;
+    if (forecastItemId !== undefined) updateData.forecastItemId = forecastItemId;
     if (partName !== undefined) updateData.partName = partName;
     if (partNumber !== undefined) updateData.partNumber = partNumber;
     if (quantity !== undefined) updateData.quantity = Number(quantity);

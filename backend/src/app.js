@@ -33,6 +33,7 @@ app.use('/api/technicians', technicianRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/loyalty', loyaltyRoutes);
 app.use('/api/stocks', stockRoutes);
+app.use('/api/inventory-predictions',require('./routes/inventoryForecastRoutes'));
 app.use('/api/payments', paymentRoutes);
 app.use('/api/notifications', notificationRoutes);
 
@@ -53,7 +54,7 @@ app.use((err, req, res, next) => {
 const DEFAULT_PORT = Number(process.env.PORT || 5004);
 
 function startServer(port = DEFAULT_PORT) {
-  const server = app.listen(port, '0.0.0.0', () => {
+  const server = app.listen(port, process.env.HOST || '0.0.0.0', () => {
     console.log(`✅ Server is running on port ${port}`);
   });
 
@@ -85,6 +86,7 @@ async function initializeApp() {
     if (isDbConnected) {
       console.log('✅ Database connection established');
       await bootstrapData();
+      await require('./services/inventoryDemo').seedInventoryDemo();
       console.log('✅ Bootstrap data completed');
     } else {
       console.warn('⚠️ Skipping database bootstrap because MongoDB is not available yet.');

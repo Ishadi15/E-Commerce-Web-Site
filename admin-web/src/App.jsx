@@ -628,6 +628,7 @@ export default function App() {
         {activeTab === 'stocks' && (
           <ProtectedFeature userRole={auth.user.role} feature="stocks">
             <StockManager
+              token={token}
               stocks={stocks}
               onCreate={handleStockCreate}
               onUpdate={handleStockUpdate}
