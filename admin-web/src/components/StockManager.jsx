@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
+import InventoryForecast from './InventoryForecast';
 
-export default function StockManager({ stocks, onCreate, onUpdate, onDelete, loading }) {
+export default function StockManager({ stocks, onCreate, onUpdate, onDelete, loading, token }) {
+  const [view,setView]=useState('stock');
+  const [forecastStockId,setForecastStockId]=useState(null);
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [toasts, setToasts] = useState([]);
@@ -160,6 +163,8 @@ export default function StockManager({ stocks, onCreate, onUpdate, onDelete, loa
 
   return (
     <>
+      <div className="inventory-view-tabs" role="tablist" aria-label="Inventory views"><button role="tab" aria-selected={view==='stock'} className="ghost" onClick={()=>setView('stock')}>Stock management</button><button role="tab" aria-selected={view==='forecast'} className="ghost" onClick={()=>setView('forecast')}>Demand forecast</button></div>
+      {view==='forecast'&&<InventoryForecast stocks={stocks} token={token} initialStockId={forecastStockId} onUpdate={onUpdate}/>}
       {/* ── Toast Notification Stack ── */}
       <div className="toast-stack">
         {toasts.map((toast) => (
@@ -175,7 +180,7 @@ export default function StockManager({ stocks, onCreate, onUpdate, onDelete, loa
         ))}
       </div>
 
-      <div className="card">
+      {view==='stock'&&<div className="card">
         <div className="card-header">
           <div>
             <h2>📦 Spare Parts Inventory</h2>
@@ -306,7 +311,7 @@ export default function StockManager({ stocks, onCreate, onUpdate, onDelete, loa
                     </td>
                     <td className="muted">{stock.partNumber}</td>
                     <td style={{ color: stock.quantity === 0 ? '#dc2626' : stock.quantity <= stock.minQuantity ? '#d97706' : 'inherit', fontWeight: stock.quantity <= stock.minQuantity ? 700 : 400 }}>
-                      {stock.quantity}
+                      {stock.quantity} {stock.unit || ''}
                     </td>
                     <td>{stock.minQuantity}</td>
                     <td>Rs. {stock.unitPrice}</td>
@@ -316,6 +321,7 @@ export default function StockManager({ stocks, onCreate, onUpdate, onDelete, loa
                     </td>
                     <td>
                       <div className="action-buttons">
+                        <button className="ghost small" onClick={()=>{setForecastStockId(stock.id);setView('forecast');}}>Forecast</button>
                         <button className="ghost small" onClick={() => handleEdit(stock)} disabled={loading}>
                           Edit
                         </button>
@@ -330,7 +336,7 @@ export default function StockManager({ stocks, onCreate, onUpdate, onDelete, loa
             </tbody>
           </table>
         </div>
-      </div>
+      </div>}
     </>
   );
 }

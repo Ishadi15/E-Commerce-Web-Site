@@ -7,7 +7,7 @@ function resolveApiBaseUrl() {
   if (import.meta.env.DEV) {
     return '/api';
   }
-  return 'http://10.255.111.96:5004/api';
+  return '/api';
 }
 
 const API_BASE_URL = resolveApiBaseUrl();
@@ -165,3 +165,6 @@ export function triggerSendServiceReminders(token) {
   return request('/payments/reminders/send-due', { method: 'POST', token });
 }
 
+
+export const fetchInventoryForecastConfig = token => request('/inventory-predictions/config',{token});
+export const runInventoryForecast = (data,token) => request('/inventory-predictions/forecast',{method:'POST',data,token});
