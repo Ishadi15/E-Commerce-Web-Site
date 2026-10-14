@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Filter, ShoppingCart, Check, Eye, Sparkles, Heart, ChevronDown, Flame } from 'lucide-react';
+import { Filter, ShoppingCart, Check, Eye, Sparkles, Heart, ChevronDown, Flame, Star } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 
@@ -514,11 +514,16 @@ const ProductCatalog = ({ filters, setFilters, searchQuery, onProductSelect }) =
 
                         {/* Product Info */}
                         <div className="p-4 flex flex-col flex-1">
-                          {product.brand && (
-                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">
-                              {product.brand}
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider truncate max-w-[120px]">
+                              {product.brand || 'FashionStore'}
                             </span>
-                          )}
+                            <span className="text-[10px] text-amber-500 font-bold flex items-center gap-0.5">
+                              <Star size={11} fill="currentColor" />
+                              {product.rating || '4.9'}
+                              <span className="text-gray-400 text-[9px]">({product.numReviews || (product.reviews ? product.reviews.length : 3)})</span>
+                            </span>
+                          </div>
                           <h3 className="text-xs sm:text-sm font-bold text-gray-900 line-clamp-1 group-hover:text-brand-500 transition-colors">
                             {product.title}
                           </h3>

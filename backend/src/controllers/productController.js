@@ -155,6 +155,7 @@ exports.createProduct = async (req, res) => {
     const product = await Product.create(req.body);
     res.status(201).json({
       success: true,
+      message: 'Product created successfully',
       data: product
     });
   } catch (error) {
@@ -164,3 +165,143 @@ exports.createProduct = async (req, res) => {
     });
   }
 };
+
+// @desc    Update a product (Admin)
+// @route   PUT /api/products/:id
+// @access  Private/Admin
+exports.updateProduct = async (req, res) => {
+  try {
+    const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true
+    });
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Product updated successfully',
+      data: product
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// @desc    Delete a product (Admin)
+// @route   DELETE /api/products/:id
+// @access  Private/Admin
+exports.deleteProduct = async (req, res) => {
+  try {
+    const product = await Product.findByIdAndDelete(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Product deleted successfully',
+      data: {}
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// @desc    Create new review for product
+// @route   POST /api/products/:id/reviews
+// @access  Public / Optional Auth
+exports.createProductReview = async (req, res) => {
+  try {
+    const { rating, comment, name } = req.body;
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
+      });
+    }
+
+    const ratingNum = Number(rating);
+    if (!ratingNum || ratingNum < 1 || ratingNum > 5) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide a valid rating between 1 and 5'
+      });
+    }
+
+    if (!comment || comment.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide a review comment'
+      });
+    }
+
+    const reviewerName = req.user?.name || name || 'Customer';
+    const userId = req.user?._id || null;
+
+    // Check if user already reviewed
+    if (userId) {
+      const alreadyReviewed = product.reviews.find(
+        (r) => r.user && r.user.toString() === userId.toString()
+      );
+
+      if (alreadyReviewed) {
+        alreadyReviewed.rating = ratingNum;
+        alreadyReviewed.comment = comment.trim();
+        alreadyReviewed.createdAt = Date.now();
+      } else {
+        product.reviews.push({
+          user: userId,
+          name: reviewerName,
+          rating: ratingNum,
+          comment: comment.trim(),
+          createdAt: Date.now()
+        });
+      }
+    } else {
+      product.reviews.push({
+        name: reviewerName,
+        rating: ratingNum,
+        comment: comment.trim(),
+        createdAt: Date.now()
+      });
+    }
+
+    product.numReviews = product.reviews.length;
+    const totalRating = product.reviews.reduce((acc, item) => item.rating + acc, 0);
+    product.rating = Number((totalRating / product.reviews.length).toFixed(1));
+
+    await product.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'Review submitted successfully',
+      data: product
+    });
+  } catch (error) {
+    console.error('Error creating review:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to submit review',
+      error: error.message
+    });
+  }
+};
+

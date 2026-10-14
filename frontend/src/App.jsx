@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingBag, Search, User as UserIcon, Heart, Menu, X, Package, LogOut, ChevronRight, Settings } from 'lucide-react';
+import { ShoppingBag, Search, User as UserIcon, Heart, Menu, X, Package, LogOut, ChevronRight, Settings, Shield } from 'lucide-react';
 import ProductCatalog from './components/ProductCatalog';
 import CartSidebar from './components/CartSidebar';
 import AuthModal from './components/AuthModal';
@@ -9,6 +9,7 @@ import OrderSuccessModal from './components/OrderSuccessModal';
 import MyOrdersModal from './components/MyOrdersModal';
 import WishlistModal from './components/WishlistModal';
 import UserProfileModal from './components/UserProfileModal';
+import AdminDashboardModal from './components/AdminDashboardModal';
 import { CartProvider, useCart } from './context/CartContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { WishlistProvider, useWishlist } from './context/WishlistContext';
@@ -26,6 +27,7 @@ function AppContent() {
   const [isMyOrdersOpen, setIsMyOrdersOpen] = useState(false);
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isAdminDashboardOpen, setIsAdminDashboardOpen] = useState(false);
   const [lastPlacedOrder, setLastPlacedOrder] = useState(null);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -127,6 +129,16 @@ function AppContent() {
               )}
             </button>
 
+            {/* Admin Portal Fast Access Button */}
+            <button
+              onClick={() => setIsAdminDashboardOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-900 hover:bg-black text-white text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shadow-xs border border-gray-800"
+              title="Admin Operations & Analytics"
+            >
+              <Shield size={14} className="text-brand-500" />
+              <span className="hidden sm:inline">Admin</span>
+            </button>
+
             {/* User Profile / Auth Button */}
             <div className="relative">
               {user ? (
@@ -194,6 +206,17 @@ function AppContent() {
                       >
                         <Package size={16} className="text-brand-500" />
                         <span>My Orders</span>
+                      </button>
+
+                      <button 
+                        onClick={() => {
+                          setIsProfileDropdownOpen(false);
+                          setIsAdminDashboardOpen(true);
+                        }}
+                        className="w-full text-left py-2 px-3 hover:bg-brand-50 text-xs font-bold text-brand-600 rounded-xl transition-all flex items-center gap-2.5 cursor-pointer"
+                      >
+                        <Shield size={16} className="text-brand-500" />
+                        <span>Admin Dashboard</span>
                       </button>
 
                       <button 
@@ -312,6 +335,17 @@ function AppContent() {
               >
                 <Heart size={16} />
                 <span>My Wishlist ({wishlistCount})</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  setIsAdminDashboardOpen(true);
+                }}
+                className="w-full py-2.5 mb-2 flex items-center justify-center gap-2 bg-gray-900 text-white rounded-xl font-bold text-xs uppercase tracking-wider"
+              >
+                <Shield size={16} className="text-brand-500" />
+                <span>Admin Dashboard</span>
               </button>
 
               {user ? (
@@ -441,6 +475,11 @@ function AppContent() {
       <MyOrdersModal 
         isOpen={isMyOrdersOpen} 
         onClose={() => setIsMyOrdersOpen(false)} 
+      />
+
+      <AdminDashboardModal
+        isOpen={isAdminDashboardOpen}
+        onClose={() => setIsAdminDashboardOpen(false)}
       />
 
     </div>

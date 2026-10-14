@@ -2,12 +2,35 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./src/config/db');
+const User = require('./src/models/User');
 
 // Load env vars
 dotenv.config();
 
 // Connect to database
-connectDB();
+connectDB().then(async () => {
+  try {
+    // Seed default admin account if not already present
+    const adminExists = await User.findOne({ email: 'admin@fashionstore.lk' });
+    if (!adminExists) {
+      await User.create({
+        name: 'Store Administrator',
+        email: 'admin@fashionstore.lk',
+        password: 'admin123',
+        role: 'admin',
+        phone: '0771234567',
+        address: {
+          street: '100 Galle Road',
+          city: 'Colombo',
+          postalCode: '00300'
+        }
+      });
+      console.log('Default Admin Account created: admin@fashionstore.lk / admin123');
+    }
+  } catch (err) {
+    console.warn('Admin check note:', err.message);
+  }
+});
 
 const app = express();
 
@@ -19,14 +42,16 @@ app.use(cors());
 const auth = require('./src/routes/authRoutes');
 const products = require('./src/routes/productRoutes');
 const orders = require('./src/routes/orderRoutes');
+const admin = require('./src/routes/adminRoutes');
 
 // Mount routers
 app.use('/api/auth', auth);
 app.use('/api/products', products);
 app.use('/api/orders', orders);
+app.use('/api/admin', admin);
 
 app.get('/', (req, res) => {
-  res.send('Fashion Store API is running...');
+  res.send('Fashion Store API is running smoothly...');
 });
 
 const PORT = process.env.PORT || 5000;
