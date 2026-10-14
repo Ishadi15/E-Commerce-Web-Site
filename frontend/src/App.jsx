@@ -419,6 +419,7 @@ function AppContent() {
         product={selectedProduct} 
         isOpen={!!selectedProduct} 
         onClose={() => setSelectedProduct(null)} 
+        onSelectRelated={(prod) => setSelectedProduct(prod)}
       />
 
       <CartSidebar 
