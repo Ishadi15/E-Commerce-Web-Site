@@ -1,38 +1,78 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const CartContext = createContext();
 
 export const useCart = () => useContext(CartContext);
 
 export const CartProvider = ({ children }) => {
-  const [cartItems, setCartItems] = useState([]);
+  const [cartItems, setCartItems] = useState(() => {
+    try {
+      const saved = localStorage.getItem('fashionstore_cart');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
   const [isCartOpen, setIsCartOpen] = useState(false);
 
-  const addToCart = (product) => {
+  useEffect(() => {
+    try {
+      localStorage.setItem('fashionstore_cart', JSON.stringify(cartItems));
+    } catch (e) {
+      console.error('Failed to save cart to localStorage', e);
+    }
+  }, [cartItems]);
+
+  const addToCart = (product, quantity = 1, selectedSize = null, selectedColor = null) => {
+    const size = selectedSize || (product.sizes && product.sizes[0]) || product.size || 'M';
+    const color = selectedColor || (product.colors && product.colors[0]) || product.color || 'Standard';
+    const image = product.images?.[0]?.url || product.image || '';
+    const cartItemId = `${product._id || product.id}_${size}_${color}`;
+
     setCartItems(prev => {
-      const existing = prev.find(item => item.id === product.id);
+      const existing = prev.find(item => item.cartItemId === cartItemId);
       if (existing) {
         return prev.map(item => 
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+          item.cartItemId === cartItemId 
+            ? { ...item, quantity: item.quantity + quantity } 
+            : item
         );
       }
-      return [...prev, { ...product, quantity: 1 }];
+      return [
+        ...prev, 
+        { 
+          ...product, 
+          cartItemId, 
+          id: product._id || product.id, 
+          image, 
+          size, 
+          color, 
+          quantity 
+        }
+      ];
     });
-    setIsCartOpen(true); // Auto open cart when item is added
+
+    setIsCartOpen(true);
   };
 
-  const removeFromCart = (id) => {
-    setCartItems(prev => prev.filter(item => item.id !== id));
+  const removeFromCart = (cartItemId) => {
+    setCartItems(prev => prev.filter(item => (item.cartItemId || item.id) !== cartItemId));
   };
 
-  const updateQuantity = (id, change) => {
+  const updateQuantity = (cartItemId, change) => {
     setCartItems(prev => prev.map(item => {
-      if (item.id === id) {
+      if ((item.cartItemId || item.id) === cartItemId) {
         const newQuantity = Math.max(1, item.quantity + change);
         return { ...item, quantity: newQuantity };
       }
       return item;
     }));
+  };
+
+  const clearCart = () => {
+    setCartItems([]);
+    localStorage.removeItem('fashionstore_cart');
   };
 
   const cartTotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
@@ -46,6 +86,7 @@ export const CartProvider = ({ children }) => {
       addToCart,
       removeFromCart,
       updateQuantity,
+      clearCart,
       cartTotal,
       cartCount
     }}>
