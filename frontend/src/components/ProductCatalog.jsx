@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Filter, ShoppingCart, Check, Eye, Sparkles, Heart, ChevronDown, Flame } from 'lucide-react';
+import { Filter, ShoppingCart, Check, Eye, Sparkles, Heart, ChevronDown, Flame, Star } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 
@@ -53,7 +53,7 @@ const COLOR_OPTIONS = [
   { name: 'Brown', label: 'Brown', hex: '#78350F' },
 ];
 
-const ProductCatalog = ({ filters, setFilters, searchQuery, onProductSelect }) => {
+const ProductCatalog = ({ filters, setFilters, searchQuery, onProductSelect, onClearSearch }) => {
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
 
@@ -120,7 +120,17 @@ const ProductCatalog = ({ filters, setFilters, searchQuery, onProductSelect }) =
       let filtered = [...fallbackMockProducts];
       if (searchQuery && searchQuery.trim() !== '') {
         const q = searchQuery.toLowerCase().trim();
-        filtered = filtered.filter(p => p.title.toLowerCase().includes(q) || p.category.toLowerCase().includes(q) || (p.brand && p.brand.toLowerCase().includes(q)));
+        filtered = filtered.filter(p => {
+          const titleMatch = p.title.toLowerCase().includes(q);
+          const catMatch = p.category.toLowerCase().includes(q);
+          const brandMatch = p.brand && p.brand.toLowerCase().includes(q);
+          const gentMatch = /gent|men|boy|male/i.test(q) && p.category === 'Men';
+          const ladiesMatch = /ladi|lady|women|woman|girl/i.test(q) && p.category === 'Women';
+          const kidsMatch = /kid|baby|child/i.test(q) && p.category === 'Kids';
+          const footwearMatch = /shoe|sneaker|loafer|footwear|kicks/i.test(q) && p.category === 'Footwear';
+          const accMatch = /watch|belt|sunglass|accessor/i.test(q) && p.category === 'Accessories';
+          return titleMatch || catMatch || brandMatch || gentMatch || ladiesMatch || kidsMatch || footwearMatch || accMatch;
+        });
       }
       if (filters.category && filters.category !== '') {
         filtered = filtered.filter(p => p.category === filters.category);
@@ -157,6 +167,9 @@ const ProductCatalog = ({ filters, setFilters, searchQuery, onProductSelect }) =
   const clearAllFilters = () => {
     setFilters({ category: '', size: '', color: '', inStock: false, maxPrice: 300 });
     setVisibleCount(8);
+    if (onClearSearch) {
+      onClearSearch();
+    }
   };
 
   const displayedProducts = products.slice(0, visibleCount);
@@ -514,11 +527,16 @@ const ProductCatalog = ({ filters, setFilters, searchQuery, onProductSelect }) =
 
                         {/* Product Info */}
                         <div className="p-4 flex flex-col flex-1">
-                          {product.brand && (
-                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">
-                              {product.brand}
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider truncate max-w-[120px]">
+                              {product.brand || 'FashionStore'}
                             </span>
-                          )}
+                            <span className="text-[10px] text-amber-500 font-bold flex items-center gap-0.5">
+                              <Star size={11} fill="currentColor" />
+                              {product.rating || '4.9'}
+                              <span className="text-gray-400 text-[9px]">({product.numReviews || (product.reviews ? product.reviews.length : 3)})</span>
+                            </span>
+                          </div>
                           <h3 className="text-xs sm:text-sm font-bold text-gray-900 line-clamp-1 group-hover:text-brand-500 transition-colors">
                             {product.title}
                           </h3>

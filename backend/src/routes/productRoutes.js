@@ -3,19 +3,28 @@ const {
   getProducts,
   getProductById,
   getRelatedProducts,
-  createProduct
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  createProductReview
 } = require('../controllers/productController');
+const { protect, authorize, optionalAuth } = require('../middlewares/authMiddleware');
 
 const router = express.Router();
 
 router.route('/')
   .get(getProducts)
-  .post(createProduct);
+  .post(protect, authorize('admin'), createProduct);
 
 router.route('/:id/related')
   .get(getRelatedProducts);
 
+router.route('/:id/reviews')
+  .post(optionalAuth, createProductReview);
+
 router.route('/:id')
-  .get(getProductById);
+  .get(getProductById)
+  .put(protect, authorize('admin'), updateProduct)
+  .delete(protect, authorize('admin'), deleteProduct);
 
 module.exports = router;

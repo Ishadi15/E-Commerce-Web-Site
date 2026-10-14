@@ -45,13 +45,15 @@ export const CartProvider = ({ children }) => {
     const color = selectedColor || (product.colors && product.colors[0]) || product.color || 'Standard';
     const image = product.images?.[0]?.url || product.image || '';
     const cartItemId = `${product._id || product.id}_${size}_${color}`;
+    const maxStock = product.countInStock !== undefined ? Number(product.countInStock) : 25;
 
     setCartItems(prev => {
       const existing = prev.find(item => item.cartItemId === cartItemId);
       if (existing) {
+        const newQty = Math.min(maxStock, existing.quantity + quantity);
         return prev.map(item => 
           item.cartItemId === cartItemId 
-            ? { ...item, quantity: item.quantity + quantity } 
+            ? { ...item, quantity: newQty, countInStock: maxStock } 
             : item
         );
       }
@@ -64,7 +66,8 @@ export const CartProvider = ({ children }) => {
           image, 
           size, 
           color, 
-          quantity 
+          quantity: Math.min(maxStock, quantity),
+          countInStock: maxStock
         }
       ];
     });
@@ -79,7 +82,8 @@ export const CartProvider = ({ children }) => {
   const updateQuantity = (cartItemId, change) => {
     setCartItems(prev => prev.map(item => {
       if ((item.cartItemId || item.id) === cartItemId) {
-        const newQuantity = Math.max(1, item.quantity + change);
+        const maxStock = item.countInStock !== undefined ? Number(item.countInStock) : 99;
+        const newQuantity = Math.min(maxStock, Math.max(1, item.quantity + change));
         return { ...item, quantity: newQuantity };
       }
       return item;
