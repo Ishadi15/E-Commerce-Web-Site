@@ -53,7 +53,7 @@ const COLOR_OPTIONS = [
   { name: 'Brown', label: 'Brown', hex: '#78350F' },
 ];
 
-const ProductCatalog = ({ filters, setFilters, searchQuery, onProductSelect }) => {
+const ProductCatalog = ({ filters, setFilters, searchQuery, onProductSelect, onClearSearch }) => {
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
 
@@ -120,7 +120,17 @@ const ProductCatalog = ({ filters, setFilters, searchQuery, onProductSelect }) =
       let filtered = [...fallbackMockProducts];
       if (searchQuery && searchQuery.trim() !== '') {
         const q = searchQuery.toLowerCase().trim();
-        filtered = filtered.filter(p => p.title.toLowerCase().includes(q) || p.category.toLowerCase().includes(q) || (p.brand && p.brand.toLowerCase().includes(q)));
+        filtered = filtered.filter(p => {
+          const titleMatch = p.title.toLowerCase().includes(q);
+          const catMatch = p.category.toLowerCase().includes(q);
+          const brandMatch = p.brand && p.brand.toLowerCase().includes(q);
+          const gentMatch = /gent|men|boy|male/i.test(q) && p.category === 'Men';
+          const ladiesMatch = /ladi|lady|women|woman|girl/i.test(q) && p.category === 'Women';
+          const kidsMatch = /kid|baby|child/i.test(q) && p.category === 'Kids';
+          const footwearMatch = /shoe|sneaker|loafer|footwear|kicks/i.test(q) && p.category === 'Footwear';
+          const accMatch = /watch|belt|sunglass|accessor/i.test(q) && p.category === 'Accessories';
+          return titleMatch || catMatch || brandMatch || gentMatch || ladiesMatch || kidsMatch || footwearMatch || accMatch;
+        });
       }
       if (filters.category && filters.category !== '') {
         filtered = filtered.filter(p => p.category === filters.category);
@@ -157,6 +167,9 @@ const ProductCatalog = ({ filters, setFilters, searchQuery, onProductSelect }) =
   const clearAllFilters = () => {
     setFilters({ category: '', size: '', color: '', inStock: false, maxPrice: 300 });
     setVisibleCount(8);
+    if (onClearSearch) {
+      onClearSearch();
+    }
   };
 
   const displayedProducts = products.slice(0, visibleCount);

@@ -59,6 +59,8 @@ function AppContent() {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     setSearchQuery(searchInput);
+    // When executing a global search, search across all categories by default
+    setFilters(prev => ({ ...prev, category: '' }));
     window.scrollTo({ top: document.getElementById('products-section')?.offsetTop - 80, behavior: 'smooth' });
   };
 
@@ -381,6 +383,7 @@ function AppContent() {
           setFilters={setFilters} 
           searchQuery={searchQuery}
           onProductSelect={(product) => setSelectedProduct(product)}
+          onClearSearch={() => { setSearchQuery(''); setSearchInput(''); }}
         />
       </main>
 

@@ -9,14 +9,34 @@ exports.getProducts = async (req, res) => {
 
     const query = {};
 
-    // Search by keyword in title, description, brand, or category
+    // Search by keyword in title, description, brand, or category with smart synonyms
     if (keyword && keyword.trim() !== '') {
-      query.$or = [
-        { title: { $regex: keyword.trim(), $options: 'i' } },
-        { description: { $regex: keyword.trim(), $options: 'i' } },
-        { category: { $regex: keyword.trim(), $options: 'i' } },
-        { brand: { $regex: keyword.trim(), $options: 'i' } }
+      const kw = keyword.trim();
+      const lower = kw.toLowerCase();
+      const orConditions = [
+        { title: { $regex: kw, $options: 'i' } },
+        { description: { $regex: kw, $options: 'i' } },
+        { brand: { $regex: kw, $options: 'i' } },
+        { category: { $regex: kw, $options: 'i' } }
       ];
+
+      if (/gent|men|boy|male/i.test(lower)) {
+        orConditions.push({ category: 'Men' });
+      }
+      if (/ladi|lady|women|woman|girl|female/i.test(lower)) {
+        orConditions.push({ category: 'Women' });
+      }
+      if (/kid|baby|child/i.test(lower)) {
+        orConditions.push({ category: 'Kids' });
+      }
+      if (/shoe|sneaker|loafer|footwear|kicks/i.test(lower)) {
+        orConditions.push({ category: 'Footwear' });
+      }
+      if (/watch|belt|sunglass|accessor/i.test(lower)) {
+        orConditions.push({ category: 'Accessories' });
+      }
+
+      query.$or = orConditions;
     }
 
     // Category filter
