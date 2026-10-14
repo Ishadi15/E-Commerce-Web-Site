@@ -38,7 +38,6 @@ export const AuthProvider = ({ children }) => {
         }
       } catch (err) {
         console.error('Error loading user:', err);
-        // Don't log out on general network failure, but stop loading
       } finally {
         setLoading(false);
       }
@@ -73,7 +72,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (name, email, password) => {
+  const register = async (name, email, password, phone = '') => {
     setError(null);
     try {
       const res = await fetch(`${API_URL}/register`, {
@@ -81,7 +80,7 @@ export const AuthProvider = ({ children }) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, password, phone }),
       });
 
       const data = await res.json();
@@ -93,6 +92,82 @@ export const AuthProvider = ({ children }) => {
       setToken(data.token);
       setUser(data.user);
       return { success: true };
+    } catch (err) {
+      setError(err.message);
+      return { success: false, message: err.message };
+    }
+  };
+
+  const updateProfile = async (profileData) => {
+    setError(null);
+    try {
+      const res = await fetch(`${API_URL}/updateprofile`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(profileData),
+      });
+
+      const data = await res.json();
+      if (!data.success) {
+        throw new Error(data.message || 'Profile update failed');
+      }
+
+      setUser(data.data);
+      return { success: true, message: data.message };
+    } catch (err) {
+      setError(err.message);
+      return { success: false, message: err.message };
+    }
+  };
+
+  const updatePassword = async (passwordData) => {
+    setError(null);
+    try {
+      const res = await fetch(`${API_URL}/updatepassword`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(passwordData),
+      });
+
+      const data = await res.json();
+      if (!data.success) {
+        throw new Error(data.message || 'Password update failed');
+      }
+
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+        setToken(data.token);
+      }
+      return { success: true, message: 'Password updated successfully' };
+    } catch (err) {
+      setError(err.message);
+      return { success: false, message: err.message };
+    }
+  };
+
+  const forgotPassword = async (email) => {
+    setError(null);
+    try {
+      const res = await fetch(`${API_URL}/forgotpassword`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json();
+      if (!data.success) {
+        throw new Error(data.message || 'Password reset request failed');
+      }
+
+      return { success: true, message: data.message, resetToken: data.resetToken };
     } catch (err) {
       setError(err.message);
       return { success: false, message: err.message };
@@ -115,6 +190,9 @@ export const AuthProvider = ({ children }) => {
         error,
         login,
         register,
+        updateProfile,
+        updatePassword,
+        forgotPassword,
         logout,
         setError,
       }}

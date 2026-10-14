@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { X, ShoppingBag, Check, ShieldCheck, Truck, RefreshCw, Star } from 'lucide-react';
+import { X, ShoppingBag, Check, ShieldCheck, Truck, RefreshCw, Star, Heart } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
 
 const ProductDetailModal = ({ product, isOpen, onClose }) => {
   const { addToCart } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
   
   if (!isOpen || !product) return null;
 
@@ -176,27 +178,42 @@ const ProductDetailModal = ({ product, isOpen, onClose }) => {
           </div>
 
           {/* Action Buttons & Badges */}
-          <div className="mt-8 pt-4 border-t border-gray-100">
-            <button
-              onClick={handleAddToCart}
-              className={`w-full py-4 rounded-xl font-bold uppercase tracking-wider text-sm flex items-center justify-center gap-3 shadow-lg transition-all cursor-pointer ${
-                isAdded
-                  ? 'bg-green-600 text-white shadow-green-600/30'
-                  : 'bg-brand-500 hover:bg-red-700 text-white shadow-brand-500/30 active:scale-[0.99]'
-              }`}
-            >
-              {isAdded ? (
-                <>
-                  <Check size={20} className="stroke-[3]" />
-                  Added To Your Cart!
-                </>
-              ) : (
-                <>
-                  <ShoppingBag size={20} />
-                  Add To Cart • Rs. {((product.price * 300) * quantity).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                </>
-              )}
-            </button>
+          <div className="mt-8 pt-4 border-t border-gray-100 flex flex-col gap-3">
+            <div className="flex gap-3">
+              <button
+                onClick={handleAddToCart}
+                className={`flex-1 py-4 rounded-xl font-bold uppercase tracking-wider text-sm flex items-center justify-center gap-3 shadow-lg transition-all cursor-pointer ${
+                  isAdded
+                    ? 'bg-green-600 text-white shadow-green-600/30'
+                    : 'bg-brand-500 hover:bg-red-700 text-white shadow-brand-500/30 active:scale-[0.99]'
+                }`}
+              >
+                {isAdded ? (
+                  <>
+                    <Check size={20} className="stroke-[3]" />
+                    Added To Your Cart!
+                  </>
+                ) : (
+                  <>
+                    <ShoppingBag size={20} />
+                    Add To Cart • Rs. {((product.price * 300) * quantity).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => toggleWishlist(product)}
+                className={`px-4 rounded-xl border transition-all cursor-pointer flex items-center justify-center ${
+                  isInWishlist(product.id || product._id)
+                    ? 'bg-red-50 border-red-200 text-red-500'
+                    : 'border-gray-200 hover:border-red-400 text-gray-400 hover:text-red-500 bg-gray-50'
+                }`}
+                title={isInWishlist(product.id || product._id) ? "Remove from Wishlist" : "Save to Wishlist"}
+              >
+                <Heart size={22} className={isInWishlist(product.id || product._id) ? "fill-red-500 text-red-500" : ""} />
+              </button>
+            </div>
 
             {/* Guarantees */}
             <div className="grid grid-cols-3 gap-2 mt-5 text-[11px] text-gray-500 text-center font-medium">

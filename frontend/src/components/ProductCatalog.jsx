@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Filter, ShoppingCart, Check, Eye, Sparkles } from 'lucide-react';
+import { Filter, ShoppingCart, Check, Eye, Sparkles, Heart } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
 
 const fallbackMockProducts = [
   // Men
@@ -43,6 +44,7 @@ const categoryCircles = [
 
 const ProductCatalog = ({ filters, setFilters, searchQuery, onProductSelect }) => {
   const { addToCart } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState('featured');
@@ -383,6 +385,23 @@ const ProductCatalog = ({ filters, setFilters, searchQuery, onProductSelect }) =
                       <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md text-gray-900 text-[10px] font-black uppercase px-2.5 py-1 rounded-md z-10 shadow-sm">
                         {product.category}
                       </div>
+
+                      {/* Wishlist Button */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleWishlist(product);
+                        }}
+                        className={`absolute top-3 right-3 p-2 rounded-full z-10 transition-all cursor-pointer shadow-md ${
+                          isInWishlist(productId)
+                            ? 'bg-red-500 text-white shadow-red-500/30'
+                            : 'bg-white/90 backdrop-blur-md text-gray-400 hover:text-red-500 hover:scale-110'
+                        }`}
+                        title={isInWishlist(productId) ? 'Remove from Wishlist' : 'Add to Wishlist'}
+                      >
+                        <Heart size={14} className={isInWishlist(productId) ? 'fill-white' : ''} />
+                      </button>
 
                       {/* Image Frame */}
                       <div className="relative aspect-[3/4] overflow-hidden bg-gray-100">

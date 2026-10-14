@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingBag, Search, User as UserIcon, Heart, Menu, X, Package, LogOut, ChevronRight } from 'lucide-react';
+import { ShoppingBag, Search, User as UserIcon, Heart, Menu, X, Package, LogOut, ChevronRight, Settings } from 'lucide-react';
 import ProductCatalog from './components/ProductCatalog';
 import CartSidebar from './components/CartSidebar';
 import AuthModal from './components/AuthModal';
@@ -7,12 +7,16 @@ import ProductDetailModal from './components/ProductDetailModal';
 import CheckoutModal from './components/CheckoutModal';
 import OrderSuccessModal from './components/OrderSuccessModal';
 import MyOrdersModal from './components/MyOrdersModal';
+import WishlistModal from './components/WishlistModal';
+import UserProfileModal from './components/UserProfileModal';
 import { CartProvider, useCart } from './context/CartContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { WishlistProvider, useWishlist } from './context/WishlistContext';
 
 function AppContent() {
   const { cartCount, setIsCartOpen } = useCart();
   const { user, loading, logout } = useAuth();
+  const { wishlistCount } = useWishlist();
   
   // Modals state
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -20,6 +24,8 @@ function AppContent() {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isOrderSuccessOpen, setIsOrderSuccessOpen] = useState(false);
   const [isMyOrdersOpen, setIsMyOrdersOpen] = useState(false);
+  const [isWishlistOpen, setIsWishlistOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [lastPlacedOrder, setLastPlacedOrder] = useState(null);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -105,8 +111,22 @@ function AppContent() {
           </form>
 
           {/* Right Action Icons */}
-          <div className="flex items-center gap-4 sm:gap-6 text-gray-800">
+          <div className="flex items-center gap-3 sm:gap-5 text-gray-800">
             
+            {/* Wishlist Trigger */}
+            <button 
+              onClick={() => setIsWishlistOpen(true)}
+              className="relative p-2 text-gray-800 hover:text-red-500 transition-colors cursor-pointer flex items-center"
+              title="My Wishlist"
+            >
+              <Heart size={22} className={wishlistCount > 0 ? "text-red-500 fill-red-500/30" : ""} />
+              {wishlistCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full shadow-md animate-in zoom-in">
+                  {wishlistCount}
+                </span>
+              )}
+            </button>
+
             {/* User Profile / Auth Button */}
             <div className="relative">
               {user ? (
@@ -136,7 +156,34 @@ function AppContent() {
                         <p className="text-[10px] text-gray-400 font-black uppercase tracking-wider">Signed in as</p>
                         <p className="text-xs font-black text-gray-900 mt-0.5 truncate">{user.name}</p>
                         <p className="text-[11px] text-gray-500 truncate">{user.email}</p>
+                        {user.role === 'admin' && (
+                          <span className="inline-block bg-brand-500/10 text-brand-500 text-[10px] font-black uppercase px-2 py-0.5 rounded mt-2">
+                            Administrator
+                          </span>
+                        )}
                       </div>
+
+                      <button 
+                        onClick={() => {
+                          setIsProfileDropdownOpen(false);
+                          setIsProfileModalOpen(true);
+                        }}
+                        className="w-full text-left py-2 px-3 hover:bg-gray-50 text-xs font-bold text-gray-700 rounded-xl transition-all flex items-center gap-2.5 cursor-pointer"
+                      >
+                        <Settings size={16} className="text-brand-500" />
+                        <span>My Profile & Address</span>
+                      </button>
+
+                      <button 
+                        onClick={() => {
+                          setIsProfileDropdownOpen(false);
+                          setIsWishlistOpen(true);
+                        }}
+                        className="w-full text-left py-2 px-3 hover:bg-gray-50 text-xs font-bold text-gray-700 rounded-xl transition-all flex items-center gap-2.5 cursor-pointer"
+                      >
+                        <Heart size={16} className="text-red-500" />
+                        <span>Saved Wishlist ({wishlistCount})</span>
+                      </button>
 
                       <button 
                         onClick={() => {
@@ -177,6 +224,7 @@ function AppContent() {
             <button 
               onClick={() => setIsCartOpen(true)}
               className="relative p-2 text-gray-800 hover:text-brand-500 transition-colors cursor-pointer flex items-center"
+              title="Shopping Cart"
             >
               <ShoppingBag size={22} />
               {cartCount > 0 && (
@@ -208,92 +256,81 @@ function AppContent() {
         {/* Desktop Category Navigation */}
         <nav className="hidden lg:flex justify-center border-t border-gray-100">
           <ul className="flex gap-8 text-xs font-bold text-gray-700 uppercase tracking-wider py-3">
-            <li>
-              <a href="#" onClick={(e) => handleCategoryClick(e, 'Women')} className={`hover:text-brand-500 transition-colors ${filters.category === 'Women' ? 'text-brand-500 font-black' : ''}`}>
-                Ladies
-              </a>
-            </li>
-            <li>
-              <a href="#" onClick={(e) => handleCategoryClick(e, 'Men')} className={`hover:text-brand-500 transition-colors ${filters.category === 'Men' ? 'text-brand-500 font-black' : ''}`}>
-                Gents
-              </a>
-            </li>
-            <li>
-              <a href="#" onClick={(e) => handleCategoryClick(e, 'Kids')} className={`hover:text-brand-500 transition-colors ${filters.category === 'Kids' ? 'text-brand-500 font-black' : ''}`}>
-                Kids
-              </a>
-            </li>
-            <li>
-              <a href="#" onClick={(e) => handleCategoryClick(e, 'Accessories')} className={`hover:text-brand-500 transition-colors ${filters.category === 'Accessories' ? 'text-brand-500 font-black' : ''}`}>
-                Accessories
-              </a>
-            </li>
-            <li>
-              <a href="#" onClick={(e) => handleCategoryClick(e, 'Footwear')} className={`hover:text-brand-500 transition-colors ${filters.category === 'Footwear' ? 'text-brand-500 font-black' : ''}`}>
-                Footwear
-              </a>
-            </li>
-            <li>
-              <a href="#" onClick={(e) => handleCategoryClick(e, '')} className={`hover:text-brand-500 transition-colors ${filters.category === '' ? 'text-brand-500 font-black' : ''}`}>
-                All Outfits
-              </a>
-            </li>
+            {['', 'Women', 'Men', 'Kids', 'Footwear', 'Accessories'].map((cat) => (
+              <li key={cat}>
+                <a 
+                  href={`#${cat || 'all'}`}
+                  onClick={(e) => handleCategoryClick(e, cat)}
+                  className={`transition-colors py-1 ${
+                    filters.category === cat 
+                      ? 'text-brand-500 border-b-2 border-brand-500 font-black' 
+                      : 'hover:text-brand-500'
+                  }`}
+                >
+                  {cat === '' ? 'All Products' : cat}
+                </a>
+              </li>
+            ))}
           </ul>
         </nav>
       </header>
 
       {/* Mobile Drawer Menu */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-[60] bg-black/60 backdrop-blur-xs flex">
-          <div className="w-72 bg-white h-full p-6 space-y-6 shadow-2xl flex flex-col justify-between">
+        <div className="lg:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-xs flex">
+          <div className="bg-white w-4/5 max-w-xs h-full p-6 shadow-xl flex flex-col justify-between overflow-y-auto animate-in slide-in-from-left duration-200">
             <div>
-              <div className="flex justify-between items-center pb-4 border-b border-gray-100">
-                <span className="font-black text-lg uppercase tracking-tight">Menu</span>
-                <button onClick={() => setIsMobileMenuOpen(false)} className="p-1 text-gray-500"><X size={20} /></button>
+              <div className="flex justify-between items-center mb-8 border-b border-gray-100 pb-4">
+                <span className="font-black text-xl tracking-tight text-gray-900">MENU</span>
+                <button onClick={() => setIsMobileMenuOpen(false)} className="text-gray-400 hover:text-black">
+                  <X size={20} />
+                </button>
               </div>
 
-              <div className="mt-4 space-y-3 text-sm font-bold uppercase tracking-wider text-gray-800">
-                {['Women', 'Men', 'Kids', 'Accessories', 'Footwear'].map(cat => (
+              <div className="space-y-4">
+                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Categories</p>
+                {['', 'Women', 'Men', 'Kids', 'Footwear', 'Accessories'].map((cat) => (
                   <button 
-                    key={cat} 
+                    key={cat}
                     onClick={(e) => handleCategoryClick(e, cat)}
-                    className="w-full text-left py-2 hover:text-brand-500 flex justify-between items-center"
+                    className="w-full flex items-center justify-between text-left py-2 font-bold text-sm text-gray-800 hover:text-brand-500"
                   >
-                    <span>{cat}</span>
-                    <ChevronRight size={16} className="text-gray-400" />
+                    <span>{cat === '' ? 'All Products' : cat}</span>
+                    <ChevronRight size={16} className="text-gray-300" />
                   </button>
                 ))}
-                <button 
-                  onClick={(e) => handleCategoryClick(e, '')}
-                  className="w-full text-left py-2 hover:text-brand-500 flex justify-between items-center"
-                >
-                  <span>View All</span>
-                  <ChevronRight size={16} className="text-gray-400" />
-                </button>
               </div>
             </div>
 
-            <div className="pt-4 border-t border-gray-100">
+            <div className="pt-6 border-t border-gray-100">
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  setIsWishlistOpen(true);
+                }}
+                className="w-full py-2.5 mb-2 flex items-center justify-center gap-2 border border-gray-200 rounded-xl font-bold text-xs uppercase text-gray-800 hover:border-red-500 hover:text-red-500"
+              >
+                <Heart size={16} />
+                <span>My Wishlist ({wishlistCount})</span>
+              </button>
+
               {user ? (
-                <div className="space-y-2">
-                  <p className="text-xs font-bold text-gray-700 truncate">Hi, {user.name}</p>
-                  <button 
-                    onClick={() => { setIsMobileMenuOpen(false); setIsMyOrdersOpen(true); }}
-                    className="w-full py-2 bg-gray-100 rounded-lg text-xs font-bold uppercase tracking-wider text-gray-800"
-                  >
-                    My Orders
-                  </button>
-                  <button 
-                    onClick={logout}
-                    className="w-full py-2 bg-red-50 text-red-600 rounded-lg text-xs font-bold uppercase tracking-wider"
-                  >
-                    Log Out
-                  </button>
-                </div>
+                <button 
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    setIsProfileModalOpen(true);
+                  }}
+                  className="w-full py-3 bg-gray-900 text-white rounded-xl font-bold text-xs uppercase tracking-wider"
+                >
+                  My Profile & Settings
+                </button>
               ) : (
                 <button 
-                  onClick={() => { setIsMobileMenuOpen(false); setIsAuthModalOpen(true); }}
-                  className="w-full py-3 bg-brand-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    setIsAuthModalOpen(true);
+                  }}
+                  className="w-full py-3 bg-brand-500 text-white rounded-xl font-bold text-xs uppercase tracking-wider"
                 >
                   Sign In / Register
                 </button>
@@ -368,6 +405,16 @@ function AppContent() {
         onClose={() => setIsAuthModalOpen(false)} 
       />
 
+      <UserProfileModal 
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+      />
+
+      <WishlistModal 
+        isOpen={isWishlistOpen}
+        onClose={() => setIsWishlistOpen(false)}
+      />
+
       <ProductDetailModal 
         product={selectedProduct} 
         isOpen={!!selectedProduct} 
@@ -402,9 +449,11 @@ function AppContent() {
 function App() {
   return (
     <AuthProvider>
-      <CartProvider>
-        <AppContent />
-      </CartProvider>
+      <WishlistProvider>
+        <CartProvider>
+          <AppContent />
+        </CartProvider>
+      </WishlistProvider>
     </AuthProvider>
   );
 }
