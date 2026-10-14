@@ -17,9 +17,13 @@ app.use(cors());
 
 // Route files
 const auth = require('./src/routes/authRoutes');
+const products = require('./src/routes/productRoutes');
+const orders = require('./src/routes/orderRoutes');
 
 // Mount routers
 app.use('/api/auth', auth);
+app.use('/api/products', products);
+app.use('/api/orders', orders);
 
 app.get('/', (req, res) => {
   res.send('Fashion Store API is running...');

@@ -1,0 +1,166 @@
+const Product = require('../models/Product');
+
+// @desc    Get all products with filtering, search, sorting, and pagination
+// @route   GET /api/products
+// @access  Public
+exports.getProducts = async (req, res) => {
+  try {
+    const { keyword, category, color, size, brand, inStock, maxPrice, sort, page, limit } = req.query;
+
+    const query = {};
+
+    // Search by keyword in title, description, brand, or category
+    if (keyword && keyword.trim() !== '') {
+      query.$or = [
+        { title: { $regex: keyword.trim(), $options: 'i' } },
+        { description: { $regex: keyword.trim(), $options: 'i' } },
+        { category: { $regex: keyword.trim(), $options: 'i' } },
+        { brand: { $regex: keyword.trim(), $options: 'i' } }
+      ];
+    }
+
+    // Category filter
+    if (category && category !== '' && category !== 'All') {
+      query.category = category;
+    }
+
+    // Color filter
+    if (color && color !== '' && color !== 'All') {
+      query.colors = { $in: [new RegExp(`^${color}$`, 'i')] };
+    }
+
+    // Size filter
+    if (size && size !== '' && size !== 'All') {
+      query.sizes = { $in: [size] };
+    }
+
+    // Brand filter
+    if (brand && brand !== '' && brand !== 'All') {
+      query.brand = { $regex: brand.trim(), $options: 'i' };
+    }
+
+    // Stock availability filter
+    if (inStock === 'true') {
+      query.countInStock = { $gt: 0 };
+    }
+
+    // Max Price filter
+    if (maxPrice && !isNaN(Number(maxPrice))) {
+      query.price = { $lte: Number(maxPrice) };
+    }
+
+    // Sorting options
+    let sortOption = { createdAt: -1 }; // default newest
+    if (sort === 'price_asc') {
+      sortOption = { price: 1 };
+    } else if (sort === 'price_desc') {
+      sortOption = { price: -1 };
+    } else if (sort === 'popular') {
+      sortOption = { countInStock: -1 };
+    }
+
+    const totalCount = await Product.countDocuments(query);
+
+    let queryExec = Product.find(query).sort(sortOption);
+
+    // Optional pagination
+    if (limit && !isNaN(Number(limit))) {
+      const pageNum = Number(page) || 1;
+      const limitNum = Number(limit);
+      queryExec = queryExec.skip((pageNum - 1) * limitNum).limit(limitNum);
+    }
+
+    const products = await queryExec;
+
+    res.status(200).json({
+      success: true,
+      totalCount,
+      count: products.length,
+      data: products
+    });
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch products',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Get single product by ID
+// @route   GET /api/products/:id
+// @access  Public
+exports.getProductById = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: product
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Server error retrieving product',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Get related products by category
+// @route   GET /api/products/:id/related
+// @access  Public
+exports.getRelatedProducts = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
+      });
+    }
+
+    const related = await Product.find({
+      _id: { $ne: product._id },
+      category: product.category
+    }).limit(4);
+
+    res.status(200).json({
+      success: true,
+      count: related.length,
+      data: related
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch related products',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Create a product
+// @route   POST /api/products
+// @access  Private/Admin
+exports.createProduct = async (req, res) => {
+  try {
+    const product = await Product.create(req.body);
+    res.status(201).json({
+      success: true,
+      data: product
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
