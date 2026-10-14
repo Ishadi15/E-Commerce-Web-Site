@@ -2,7 +2,25 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const AuthContext = createContext();
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    return {
+      user: null,
+      token: null,
+      loading: false,
+      error: null,
+      login: async () => ({ success: false }),
+      register: async () => ({ success: false }),
+      updateProfile: async () => ({ success: false }),
+      updatePassword: async () => ({ success: false }),
+      forgotPassword: async () => ({ success: false }),
+      logout: () => {},
+      setError: () => {}
+    };
+  }
+  return context;
+};
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);

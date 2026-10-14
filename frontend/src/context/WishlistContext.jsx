@@ -1,8 +1,22 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-const WishlistContext = createContext();
+const WishlistContext = createContext(null);
 
-export const useWishlist = () => useContext(WishlistContext);
+export const useWishlist = () => {
+  const context = useContext(WishlistContext);
+  if (!context) {
+    return {
+      wishlistItems: [],
+      wishlistCount: 0,
+      addToWishlist: () => {},
+      removeFromWishlist: () => {},
+      toggleWishlist: () => {},
+      isInWishlist: () => false,
+      clearWishlist: () => {}
+    };
+  }
+  return context;
+};
 
 export const WishlistProvider = ({ children }) => {
   const [wishlistItems, setWishlistItems] = useState(() => {
