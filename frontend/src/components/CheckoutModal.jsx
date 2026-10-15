@@ -166,19 +166,15 @@ const CheckoutModal = ({ isOpen, onClose, onOrderSuccess }) => {
       }
 
       const orderPayload = {
-        orderItems: cartItems.map(item => {
-          const rawId = item._id || item.id;
-          const validId = (rawId && /^[0-9a-fA-F]{24}$/.test(rawId)) ? rawId : undefined;
-          return {
-            product: validId,
-            name: item.title,
-            quantity: item.quantity,
-            size: item.size || 'M',
-            color: item.color || 'Standard',
-            image: item.image || item.images?.[0]?.url || '',
-            price: item.price
-          };
-        }),
+        orderItems: cartItems.map(item => ({
+          product: item.id || item._id,
+          name: item.title,
+          quantity: item.quantity,
+          size: item.size || 'M',
+          color: item.color || 'Standard',
+          image: item.image || item.images?.[0]?.url || '',
+          price: item.price
+        })),
         shippingAddress: {
           street: formData.street.trim(),
           city: formData.city.trim(),
@@ -272,7 +268,7 @@ const CheckoutModal = ({ isOpen, onClose, onOrderSuccess }) => {
           <div>
             <div className="flex items-center gap-2">
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-brand-500/10 text-brand-600">
-                Express Checkout
+                Member 3 Checkout Module
               </span>
             </div>
             <h2 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight uppercase mt-1">

@@ -37,7 +37,7 @@ const fallbackMockProducts = [
 const categoryCircles = [
   { label: 'Ladies', val: 'Women', img: 'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?auto=format&fit=crop&w=300&q=80' },
   { label: 'Gents', val: 'Men', img: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=300&q=80' },
-  { label: 'Kids', val: 'Kids', img: 'https://images.unsplash.com/photo-1519238263530-99abad672f66?auto=format&fit=crop&w=300&q=80' },
+  { label: 'Kids', val: 'Kids', img: 'https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&w=300&q=80' },
   { label: 'Accessories', val: 'Accessories', img: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80' },
   { label: 'Footwear', val: 'Footwear', img: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80' }
 ];
@@ -235,6 +235,10 @@ const ProductCatalog = ({ filters, setFilters, searchQuery, onProductSelect, onC
                     src={cat.img} 
                     alt={cat.label} 
                     className="w-full h-full object-cover rounded-full"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = 'https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&w=300&q=80';
+                    }}
                   />
                   {filters.category === cat.val && (
                     <div className="absolute inset-0 bg-brand-500/20 rounded-full flex items-center justify-center">

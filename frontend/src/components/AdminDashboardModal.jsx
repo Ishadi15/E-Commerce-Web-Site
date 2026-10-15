@@ -3,7 +3,7 @@ import {
   X, BarChart3, Package, ShoppingCart, AlertTriangle, TrendingUp, 
   Plus, Edit, Trash2, CheckCircle2, Clock, Truck, ShieldAlert,
   Search, RefreshCw, FileText, ChevronRight, Eye, Sparkles, Filter,
-  ArrowUpRight, ArrowDownRight, Layers, DollarSign
+  ArrowUpRight, ArrowDownRight, Layers, DollarSign, UploadCloud, Loader2
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import InvoiceModal from './InvoiceModal';
@@ -56,6 +56,10 @@ const AdminDashboardModal = ({ isOpen, onClose }) => {
   // Status notification
   const [feedbackMessage, setFeedbackMessage] = useState({ text: '', type: '' });
 
+  // Image Upload State
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageUploadMethod, setImageUploadMethod] = useState('upload'); // 'upload' | 'url'
+
   const getAuthHeaders = () => {
     const activeToken = token || localStorage.getItem('token');
     return {
@@ -67,6 +71,48 @@ const AdminDashboardModal = ({ isOpen, onClose }) => {
   const showNotification = (text, type = 'success') => {
     setFeedbackMessage({ text, type });
     setTimeout(() => setFeedbackMessage({ text: '', type: '' }), 3500);
+  };
+
+  // Direct file upload handler
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      showNotification('Please select a valid image file (JPG, PNG, WEBP, etc.)', 'error');
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      showNotification('Image size exceeds 10MB limit', 'error');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    setUploadingImage(true);
+    try {
+      const activeToken = token || localStorage.getItem('token');
+      const res = await fetch('http://localhost:5000/api/upload', {
+        method: 'POST',
+        headers: {
+          ...(activeToken ? { 'Authorization': `Bearer ${activeToken}` } : {})
+        },
+        body: formData
+      });
+      const data = await res.json();
+      if (data.success) {
+        setProductFormData(prev => ({ ...prev, imageUrl: data.imageUrl }));
+        showNotification('Photo uploaded successfully!');
+      } else {
+        showNotification(data.message || 'Image upload failed', 'error');
+      }
+    } catch (err) {
+      showNotification('Server error while uploading image', 'error');
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   // Fetch Analytics
@@ -197,6 +243,14 @@ const AdminDashboardModal = ({ isOpen, onClose }) => {
   // Create / Update Product Submit Handler
   const handleProductSubmit = async (e) => {
     e.preventDefault();
+    if (uploadingImage) {
+      showNotification('Please wait for photo upload to finish', 'error');
+      return;
+    }
+    if (!productFormData.imageUrl) {
+      showNotification('Please upload or select a product photo', 'error');
+      return;
+    }
     try {
       const payload = {
         title: productFormData.title,
@@ -239,6 +293,8 @@ const AdminDashboardModal = ({ isOpen, onClose }) => {
 
   const openCreateModal = () => {
     setEditingProduct(null);
+    setImageUploadMethod('upload');
+    setUploadingImage(false);
     setProductFormData({
       title: '',
       description: '',
@@ -248,13 +304,15 @@ const AdminDashboardModal = ({ isOpen, onClose }) => {
       sizes: ['S', 'M', 'L'],
       colors: ['Black', 'White'],
       countInStock: 25,
-      imageUrl: PRESET_IMAGES[0]
+      imageUrl: ''
     });
     setIsCreateModalOpen(true);
   };
 
   const openEditModal = (prod) => {
     setEditingProduct(prod);
+    setImageUploadMethod('upload');
+    setUploadingImage(false);
     setProductFormData({
       title: prod.title,
       description: prod.description || '',
@@ -312,7 +370,7 @@ const AdminDashboardModal = ({ isOpen, onClose }) => {
                     Admin Command Center
                   </h2>
                   <span className="bg-brand-500 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded">
-                    Admin Portal
+                    Member 4 Module
                   </span>
                 </div>
                 <p className="text-[11px] text-gray-400">
@@ -448,7 +506,7 @@ const AdminDashboardModal = ({ isOpen, onClose }) => {
                   </div>
                 </div>
 
-                {/* Low Stock Alert Interactive Table */}
+                {/* Low Stock Alert Interactive Table (Member 4 Requirement) */}
                 <div className="bg-white rounded-2xl border border-amber-200 shadow-xs overflow-hidden">
                   <div className="p-4 bg-amber-500/10 border-b border-amber-200/60 flex justify-between items-center">
                     <div className="flex items-center gap-2">
@@ -848,7 +906,7 @@ const AdminDashboardModal = ({ isOpen, onClose }) => {
                                 </span>
                               </td>
 
-                              {/* Fulfillment Status Selector */}
+                              {/* Fulfillment Status Selector (Member 4 Requirement) */}
                               <td className="py-3.5 px-3">
                                 <select
                                   value={order.orderStatus || 'Processing'}
@@ -926,18 +984,6 @@ const AdminDashboardModal = ({ isOpen, onClose }) => {
                 />
               </div>
 
-              <div>
-                <label className="block font-bold text-gray-700 mb-1">Description *</label>
-                <textarea 
-                  required
-                  rows={2}
-                  value={productFormData.description}
-                  onChange={(e) => setProductFormData(p => ({ ...p, description: e.target.value }))}
-                  placeholder="Premium breathable fabrics tailored for everyday elegance..."
-                  className="w-full text-xs border border-gray-200 rounded-xl p-2.5 focus:outline-none focus:border-brand-500"
-                />
-              </div>
-
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block font-bold text-gray-700 mb-1">Price (USD) *</label>
@@ -989,31 +1035,123 @@ const AdminDashboardModal = ({ isOpen, onClose }) => {
                 </div>
               </div>
 
-              {/* Preset Image Selection */}
+              {/* Product Image Selection / Upload */}
               <div>
-                <label className="block font-bold text-gray-700 mb-1">Image URL</label>
-                <input 
-                  type="url" 
-                  value={productFormData.imageUrl}
-                  onChange={(e) => setProductFormData(p => ({ ...p, imageUrl: e.target.value }))}
-                  className="w-full text-xs border border-gray-200 rounded-xl p-2.5 focus:outline-none focus:border-brand-500 mb-2"
-                />
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-gray-400 font-bold">Quick Presets:</span>
-                  <div className="flex gap-1.5 overflow-x-auto py-1">
-                    {PRESET_IMAGES.map((img, i) => (
-                      <img 
-                        key={i} 
-                        src={img} 
-                        alt="preset" 
-                        onClick={() => setProductFormData(p => ({ ...p, imageUrl: img }))}
-                        className={`w-8 h-8 rounded-lg object-cover cursor-pointer border-2 transition-all ${
-                          productFormData.imageUrl === img ? 'border-brand-500 scale-105' : 'border-gray-200 opacity-60'
-                        }`}
-                      />
-                    ))}
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block font-bold text-gray-700">Product Photo *</label>
+                  <div className="flex bg-gray-100 p-0.5 rounded-lg text-[11px] font-semibold">
+                    <button
+                      type="button"
+                      onClick={() => setImageUploadMethod('upload')}
+                      className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
+                        imageUploadMethod === 'upload' ? 'bg-white text-black shadow-xs font-bold' : 'text-gray-500 hover:text-black'
+                      }`}
+                    >
+                      📁 Upload Photo
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setImageUploadMethod('url')}
+                      className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
+                        imageUploadMethod === 'url' ? 'bg-white text-black shadow-xs font-bold' : 'text-gray-500 hover:text-black'
+                      }`}
+                    >
+                      🔗 Web URL / Presets
+                    </button>
                   </div>
                 </div>
+
+                {imageUploadMethod === 'upload' ? (
+                  <div>
+                    {productFormData.imageUrl ? (
+                      <div className="relative border border-emerald-200 bg-emerald-50/40 rounded-2xl p-3 flex items-center gap-3">
+                        <img 
+                          src={productFormData.imageUrl} 
+                          alt="Product Preview" 
+                          className="w-16 h-16 rounded-xl object-cover border border-emerald-300 shadow-xs" 
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 text-emerald-700 font-bold text-xs">
+                            <CheckCircle2 size={15} />
+                            <span>Photo Selected</span>
+                          </div>
+                          <p className="text-[10px] text-gray-500 truncate mt-0.5">{productFormData.imageUrl}</p>
+                          <label className="inline-flex items-center gap-1 text-[11px] font-bold text-brand-500 hover:text-black cursor-pointer mt-1 underline">
+                            <span>Browse different photo</span>
+                            <input 
+                              type="file" 
+                              accept="image/*" 
+                              onChange={handleFileUpload} 
+                              className="hidden" 
+                            />
+                          </label>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setProductFormData(p => ({ ...p, imageUrl: '' }))}
+                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                          title="Remove photo"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="border-2 border-dashed border-gray-300 hover:border-brand-500 bg-gray-50/70 hover:bg-orange-50/20 rounded-2xl p-5 flex flex-col items-center justify-center text-center cursor-pointer transition-all group">
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          onChange={handleFileUpload} 
+                          className="hidden" 
+                        />
+                        {uploadingImage ? (
+                          <div className="flex flex-col items-center py-2">
+                            <Loader2 size={28} className="text-brand-500 animate-spin mb-2" />
+                            <span className="font-bold text-xs text-gray-700">Uploading photo to server...</span>
+                            <span className="text-[10px] text-gray-400 mt-0.5">Please wait a moment</span>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="w-10 h-10 rounded-full bg-brand-50 text-brand-500 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                              <UploadCloud size={20} />
+                            </div>
+                            <span className="font-bold text-xs text-gray-800">
+                              Click to choose a photo from your computer
+                            </span>
+                            <span className="text-[10px] text-gray-400 mt-1">
+                              Supports JPG, PNG, WEBP, GIF (Max 10MB)
+                            </span>
+                          </>
+                        )}
+                      </label>
+                    )}
+                  </div>
+                ) : (
+                  <div>
+                    <input 
+                      type="url" 
+                      value={productFormData.imageUrl}
+                      onChange={(e) => setProductFormData(p => ({ ...p, imageUrl: e.target.value }))}
+                      placeholder="https://images.unsplash.com/photo-..."
+                      className="w-full text-xs border border-gray-200 rounded-xl p-2.5 focus:outline-none focus:border-brand-500 mb-2"
+                    />
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-gray-400 font-bold">Quick Presets:</span>
+                      <div className="flex gap-1.5 overflow-x-auto py-1">
+                        {PRESET_IMAGES.map((img, i) => (
+                          <img 
+                            key={i} 
+                            src={img} 
+                            alt="preset" 
+                            onClick={() => setProductFormData(p => ({ ...p, imageUrl: img }))}
+                            className={`w-8 h-8 rounded-lg object-cover cursor-pointer border-2 transition-all ${
+                              productFormData.imageUrl === img ? 'border-brand-500 scale-105' : 'border-gray-200 opacity-60'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="pt-3 border-t border-gray-100 flex justify-end gap-2">
