@@ -50,15 +50,11 @@ const ProductDetailModal = ({ product, isOpen, onClose, onSelectRelated }) => {
   const defaultSizes = product.sizes && product.sizes.length > 0 ? product.sizes : ['S', 'M', 'L', 'XL'];
   const defaultColors = product.colors && product.colors.length > 0 ? product.colors : ['Standard'];
 
-  // Multi-image list
+  // Multi-image list (Only actual product images)
   const primaryImage = product.images?.[0]?.url || product.image || 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80';
-  const imagesList = (product.images && product.images.length > 1)
-    ? product.images.map(img => typeof img === 'string' ? img : img.url)
-    : [
-        primaryImage,
-        'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=800&q=80',
-        'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=800&q=80'
-      ];
+  const imagesList = (product.images && product.images.length > 0)
+    ? product.images.map(img => typeof img === 'string' ? img : img.url).filter(Boolean)
+    : [primaryImage];
 
   const [activeImage, setActiveImage] = useState(primaryImage);
   const [selectedSize, setSelectedSize] = useState(defaultSizes[0]);
@@ -67,7 +63,7 @@ const ProductDetailModal = ({ product, isOpen, onClose, onSelectRelated }) => {
   const [isAdded, setIsAdded] = useState(false);
   const [relatedProducts, setRelatedProducts] = useState([]);
 
-  // Reviews & Rating State
+  // Reviews & Rating State (Member 4 Requirement)
   const [reviewsList, setReviewsList] = useState([]);
   const [averageRating, setAverageRating] = useState(4.9);
   const [reviewCount, setReviewCount] = useState(2);
@@ -141,7 +137,7 @@ const ProductDetailModal = ({ product, isOpen, onClose, onSelectRelated }) => {
     return COLOR_HEX_MAP[key] || '#4B5563';
   };
 
-  // Submit Review Handler
+  // Submit Review Handler (Member 4 Requirement)
   const handleSubmitReview = async (e) => {
     e.preventDefault();
     if (!reviewComment.trim()) return;
@@ -281,7 +277,7 @@ const ProductDetailModal = ({ product, isOpen, onClose, onSelectRelated }) => {
               {product.title}
             </h2>
 
-            {/* Dynamic Star Ratings & Reviews Count */}
+            {/* Dynamic Star Ratings & Reviews Count (Member 4 Requirement) */}
             <div className="flex items-center gap-2 mt-2">
               <div className="flex text-amber-400">
                 {[1, 2, 3, 4, 5].map((star) => (
@@ -434,7 +430,7 @@ const ProductDetailModal = ({ product, isOpen, onClose, onSelectRelated }) => {
               </button>
             </div>
 
-            {/* Customer Ratings & Reviews Section */}
+            {/* Customer Ratings & Reviews Section (Member 4 Requirement) */}
             <div className="mt-7 pt-5 border-t border-gray-200 space-y-4">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">

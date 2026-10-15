@@ -39,16 +39,22 @@ app.use(express.json());
 app.use(cors());
 
 // Route files
+const path = require('path');
 const auth = require('./src/routes/authRoutes');
 const products = require('./src/routes/productRoutes');
 const orders = require('./src/routes/orderRoutes');
 const admin = require('./src/routes/adminRoutes');
+const upload = require('./src/routes/uploadRoutes');
+
+// Serve uploaded static files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Mount routers
 app.use('/api/auth', auth);
 app.use('/api/products', products);
 app.use('/api/orders', orders);
 app.use('/api/admin', admin);
+app.use('/api/upload', upload);
 
 app.get('/', (req, res) => {
   res.send('Fashion Store API is running smoothly...');

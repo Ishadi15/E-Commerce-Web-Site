@@ -62,7 +62,7 @@ const CartSidebar = ({ onProceedToCheckout }) => {
           </div>
         </div>
 
-        {/* Free Delivery Target Banner */}
+        {/* Free Delivery Target Banner (Member 3 Requirement) */}
         {cartItems.length > 0 && (
           <div className="bg-amber-50/70 border-b border-amber-200/60 p-4">
             <div className="flex items-center justify-between text-xs font-bold mb-1.5">
