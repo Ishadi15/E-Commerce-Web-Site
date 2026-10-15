@@ -166,15 +166,19 @@ const CheckoutModal = ({ isOpen, onClose, onOrderSuccess }) => {
       }
 
       const orderPayload = {
-        orderItems: cartItems.map(item => ({
-          product: item.id || item._id,
-          name: item.title,
-          quantity: item.quantity,
-          size: item.size || 'M',
-          color: item.color || 'Standard',
-          image: item.image || item.images?.[0]?.url || '',
-          price: item.price
-        })),
+        orderItems: cartItems.map(item => {
+          const rawId = item._id || item.id;
+          const validId = (rawId && /^[0-9a-fA-F]{24}$/.test(rawId)) ? rawId : undefined;
+          return {
+            product: validId,
+            name: item.title,
+            quantity: item.quantity,
+            size: item.size || 'M',
+            color: item.color || 'Standard',
+            image: item.image || item.images?.[0]?.url || '',
+            price: item.price
+          };
+        }),
         shippingAddress: {
           street: formData.street.trim(),
           city: formData.city.trim(),

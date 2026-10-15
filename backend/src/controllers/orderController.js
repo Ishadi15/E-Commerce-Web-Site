@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Order = require('../models/Order');
 const Product = require('../models/Product');
 const { sendOrderInvoiceEmail, generateInvoiceHTML } = require('../utils/emailService');
@@ -27,20 +28,27 @@ exports.createOrder = async (req, res) => {
 
     // 1. Stock Intelligence Check: Verify stock availability for all items
     for (const item of orderItems) {
-      if (item.product) {
+      if (item.product && mongoose.Types.ObjectId.isValid(item.product)) {
         const productInDb = await Product.findById(item.product);
-        if (!productInDb) {
-          return res.status(404).json({
-            success: false,
-            message: `Product "${item.name}" not found in inventory`
-          });
+        if (productInDb) {
+          if (productInDb.countInStock < item.quantity) {
+            return res.status(400).json({
+              success: false,
+              message: `Product "${productInDb.title}" has insufficient stock. Only ${productInDb.countInStock} items available.`
+            });
+          }
         }
-
-        if (productInDb.countInStock < item.quantity) {
-          return res.status(400).json({
-            success: false,
-            message: `Product "${productInDb.title}" has insufficient stock. Only ${productInDb.countInStock} items available.`
-          });
+      } else if (item.name) {
+        // Fallback for non-ObjectId string IDs (e.g. 'm1'): look up by name in DB
+        const productByTitle = await Product.findOne({ title: item.name });
+        if (productByTitle) {
+          item.product = productByTitle._id; // Map to real DB product ObjectId
+          if (productByTitle.countInStock < item.quantity) {
+            return res.status(400).json({
+              success: false,
+              message: `Product "${productByTitle.title}" has insufficient stock. Only ${productByTitle.countInStock} items available.`
+            });
+          }
         }
       }
     }
@@ -71,7 +79,7 @@ exports.createOrder = async (req, res) => {
 
     // 4. Decrement countInStock atomically for each ordered product
     for (const item of orderItems) {
-      if (item.product) {
+      if (item.product && mongoose.Types.ObjectId.isValid(item.product)) {
         await Product.findByIdAndUpdate(item.product, {
           $inc: { countInStock: -item.quantity }
         });
@@ -226,7 +234,7 @@ exports.updateOrderStatus = async (req, res) => {
     } else if (status === 'Cancelled' && previousStatus !== 'Cancelled') {
       // Restock inventory if order was cancelled
       for (const item of order.orderItems) {
-        if (item.product) {
+        if (item.product && mongoose.Types.ObjectId.isValid(item.product)) {
           await Product.findByIdAndUpdate(item.product, {
             $inc: { countInStock: item.quantity }
           });
