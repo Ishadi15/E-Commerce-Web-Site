@@ -67,7 +67,7 @@ const ProductDetailModal = ({ product, isOpen, onClose, onSelectRelated }) => {
   const [isAdded, setIsAdded] = useState(false);
   const [relatedProducts, setRelatedProducts] = useState([]);
 
-  // Reviews & Rating State (Member 4 Requirement)
+  // Reviews & Rating State
   const [reviewsList, setReviewsList] = useState([]);
   const [averageRating, setAverageRating] = useState(4.9);
   const [reviewCount, setReviewCount] = useState(2);
@@ -141,7 +141,7 @@ const ProductDetailModal = ({ product, isOpen, onClose, onSelectRelated }) => {
     return COLOR_HEX_MAP[key] || '#4B5563';
   };
 
-  // Submit Review Handler (Member 4 Requirement)
+  // Submit Review Handler
   const handleSubmitReview = async (e) => {
     e.preventDefault();
     if (!reviewComment.trim()) return;
@@ -281,7 +281,7 @@ const ProductDetailModal = ({ product, isOpen, onClose, onSelectRelated }) => {
               {product.title}
             </h2>
 
-            {/* Dynamic Star Ratings & Reviews Count (Member 4 Requirement) */}
+            {/* Dynamic Star Ratings & Reviews Count */}
             <div className="flex items-center gap-2 mt-2">
               <div className="flex text-amber-400">
                 {[1, 2, 3, 4, 5].map((star) => (
@@ -434,7 +434,7 @@ const ProductDetailModal = ({ product, isOpen, onClose, onSelectRelated }) => {
               </button>
             </div>
 
-            {/* Customer Ratings & Reviews Section (Member 4 Requirement) */}
+            {/* Customer Ratings & Reviews Section */}
             <div className="mt-7 pt-5 border-t border-gray-200 space-y-4">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">

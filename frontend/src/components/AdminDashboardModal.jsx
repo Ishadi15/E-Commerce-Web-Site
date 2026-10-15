@@ -312,7 +312,7 @@ const AdminDashboardModal = ({ isOpen, onClose }) => {
                     Admin Command Center
                   </h2>
                   <span className="bg-brand-500 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded">
-                    Member 4 Module
+                    Admin Portal
                   </span>
                 </div>
                 <p className="text-[11px] text-gray-400">
@@ -448,7 +448,7 @@ const AdminDashboardModal = ({ isOpen, onClose }) => {
                   </div>
                 </div>
 
-                {/* Low Stock Alert Interactive Table (Member 4 Requirement) */}
+                {/* Low Stock Alert Interactive Table */}
                 <div className="bg-white rounded-2xl border border-amber-200 shadow-xs overflow-hidden">
                   <div className="p-4 bg-amber-500/10 border-b border-amber-200/60 flex justify-between items-center">
                     <div className="flex items-center gap-2">
@@ -848,7 +848,7 @@ const AdminDashboardModal = ({ isOpen, onClose }) => {
                                 </span>
                               </td>
 
-                              {/* Fulfillment Status Selector (Member 4 Requirement) */}
+                              {/* Fulfillment Status Selector */}
                               <td className="py-3.5 px-3">
                                 <select
                                   value={order.orderStatus || 'Processing'}

@@ -31,7 +31,7 @@ const OrderSuccessModal = ({ order, isOpen, onClose }) => {
             Thank you for shopping with FashionStore! An automated invoice has also been generated for your order.
           </p>
 
-          {/* Email Notification Note (Member 4 Requirement) */}
+          {/* Email Notification Note */}
           {order.customerInfo?.email && (
             <div className="mt-3 py-2 px-3 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5">
               <MailCheck size={16} className="text-emerald-600 shrink-0" />

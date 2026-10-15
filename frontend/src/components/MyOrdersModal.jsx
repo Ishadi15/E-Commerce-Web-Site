@@ -178,7 +178,7 @@ const MyOrdersModal = ({ isOpen, onClose }) => {
                       </div>
                     </div>
 
-                    {/* Order Tracking Timeline Stepper (Member 3 Requirement) */}
+                    {/* Order Tracking Timeline Stepper */}
                     {!isCancelled && (
                       <div className="bg-gray-50/80 rounded-2xl p-4 border border-gray-100">
                         <div className="flex justify-between items-center relative">
