@@ -1,73 +1,68 @@
 const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
-function authenticate(req, res, next) {
-  const authHeader = req.headers.authorization || '';
-  const token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+// Protect routes
+exports.protect = async (req, res, next) => {
+  let token;
 
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+
+  // Make sure token exists
   if (!token) {
-    return res.status(401).json({ error: 'Unauthorized' });
+    return res.status(401).json({ success: false, message: 'Not authorized to access this route' });
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'dev-secret');
-    req.user = decoded;
-    return next();
-  } catch (error) {
-    return res.status(401).json({ error: 'Invalid or expired token' });
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    req.user = await User.findById(decoded.id);
+
+    next();
+  } catch (err) {
+    return res.status(401).json({ success: false, message: 'Not authorized to access this route' });
   }
-}
+};
 
-function requireAdmin(req, res, next) {
-  if (!req.user || req.user.role !== 'admin') {
-    return res.status(403).json({ error: 'Admin access required' });
-  }
-
-  return next();
-}
-
-/**
- * Middleware to check if user has any of the required roles
- * @param {string[]} allowedRoles - Array of allowed roles
- * @returns {Function} Express middleware
- */
-function requireRole(...allowedRoles) {
+// Grant access to specific roles
+exports.authorize = (...roles) => {
   return (req, res, next) => {
-    if (!req.user) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
-    if (!allowedRoles.includes(req.user.role)) {
+    if (!roles.includes(req.user.role)) {
       return res.status(403).json({ 
-        error: `Access denied. Required roles: ${allowedRoles.join(', ')}` 
+        success: false, 
+        message: `User role ${req.user.role} is not authorized to access this route`
       });
     }
-
-    return next();
+    next();
   };
-}
+};
 
-function optionalAuth(req, res, next) {
-  const authHeader = req.headers.authorization || '';
-  const token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+// Optional auth - attaches user if valid token present, otherwise proceeds
+exports.optionalAuth = async (req, res, next) => {
+  let token;
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    token = req.headers.authorization.split(' ')[1];
+  }
 
   if (!token) {
-    // No token provided, continue without authentication
     return next();
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'dev-secret');
-    req.user = decoded;
-    return next();
-  } catch (error) {
-    // Invalid token, but don't fail - just continue without authentication
-    return next();
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = await User.findById(decoded.id);
+    next();
+  } catch (err) {
+    // Proceed as unauthenticated guest if token invalid
+    next();
   }
-}
-
-module.exports = {
-  authenticate,
-  optionalAuth,
-  requireAdmin,
-  requireRole
 };
+
