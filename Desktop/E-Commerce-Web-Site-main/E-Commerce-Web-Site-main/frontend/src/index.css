@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --color-brand-500: #e50010; /* Fashion Bug style red */
+  --color-dark-bg: #ffffff;
+  --color-card-bg: #ffffff;
+}
+
+body {
+  background-color: #f8f9fa;
+  color: #111827;
+  -webkit-font-smoothing: antialiased;
+}
