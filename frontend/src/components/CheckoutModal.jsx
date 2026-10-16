@@ -266,12 +266,7 @@ const CheckoutModal = ({ isOpen, onClose, onOrderSuccess }) => {
         {/* Header */}
         <div className="flex justify-between items-center pb-4 mb-6 border-b border-gray-100">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-brand-500/10 text-brand-600">
-                Member 3 Checkout Module
-              </span>
-            </div>
-            <h2 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight uppercase mt-1">
+            <h2 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight uppercase">
               Delivery & Payment Checkout
             </h2>
           </div>
