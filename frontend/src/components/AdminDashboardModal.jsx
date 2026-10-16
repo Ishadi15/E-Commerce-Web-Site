@@ -369,9 +369,6 @@ const AdminDashboardModal = ({ isOpen, onClose }) => {
                   <h2 className="text-base sm:text-lg font-black tracking-tight uppercase">
                     Admin Command Center
                   </h2>
-                  <span className="bg-brand-500 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded">
-                    Member 4 Module
-                  </span>
                 </div>
                 <p className="text-[11px] text-gray-400">
                   Operations, Store Analytics, Product Inventory CRUD & Order Fulfillment
